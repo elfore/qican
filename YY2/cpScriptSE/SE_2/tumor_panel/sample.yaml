@@ -1,0 +1,6 @@
+workdir: /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/skID_SE_2/tumor_panel/result
+mode: SE
+genome_version: hg19_decoy
+bed: /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/06.FGRT/tumor_panel/bed/TargetSeq_V2-T893V1_hg19.bed
+sample:
+  skID_3-CN001872-S02-D01-L02-UDI70: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ_Read1/L000/CN001872-S02-D01-L02-UDI70_L000_R1.fq.gz

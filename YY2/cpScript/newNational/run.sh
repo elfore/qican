@@ -1,0 +1,2 @@
+source /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/bin/activate /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/
+nextflow -q -log log/log -c /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/08.newNational_Reference_Panel/pipe/nextflow.config run -params-file sample.yaml  /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/08.newNational_Reference_Panel/pipe/newNRP.nf -bg -with-trace -resume

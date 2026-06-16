@@ -1,0 +1,2 @@
+source /mnt/gpfs/Users/lilei/software/miniconda3/bin/activate /mnt/gpfs/Users/lilei/software/miniconda3/envs/nextflow/
+nextflow -q -log log/log -c /mnt/gpfs/Users/lilei/pipeline/WES/nextflow.config run -params-file sample.yaml /mnt/gpfs/Users/lilei/pipeline/tumor_panel/tumor_panel_v1.nf -bg -with-trace -resume

@@ -1,0 +1,5 @@
+process {
+executor = 'sge'
+queue = 'RAM'
+clusterOptions = '-pe smp 4 -cwd -P p_ram -V -S /bin/bash'
+}

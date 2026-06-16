@@ -1,0 +1,235 @@
+params.ref = "/mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/genome/hg19/hg19.fa"
+params.amplicon_bed = "/mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/bed/02.PE/V26/v26.amplicon.sort.bed"
+params.merge_bed = "/mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/bed/02.PE/V26/v26.amplicon.sort.merge.bed"
+params.software = "/mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin"
+
+
+dataset = []
+params.sample.each{it ->  dataset.add(tuple(it.key, it.value.tokenize(",").get(0), it.value.tokenize(",").get(1)))}
+datasets = Channel.from(dataset)
+
+
+workflow{
+    fastp_PE(datasets)
+    bwa_PE(fastp_PE.out[0].map {sample, fq1, fq2, json ->  tuple(sample,fq1,fq2)}, params.ref)
+    QC_stat(fastp_PE.out[0].map {sample, fq1, fq2, json ->  tuple(sample,json)})
+
+    QC_stat.out.map {sample, qc_stat ->  tuple(sample, qc_stat)}.set {QC_stat_out}
+    bwa_PE.out.map {sample, bam, bai ->  tuple(sample, bam, bai)}.set {bam_PE_out}
+    bam_PE_out.combine(QC_stat_out, by:0).map {sample, bam, bai, qc_stat -> tuple(sample, bam, bai, qc_stat)}| set {sample_qc_stat_bwa}
+    bam_stat(sample_qc_stat_bwa, params.amplicon_bed, params.merge_bed)
+    filter_bam(bwa_PE.out, params.ref, params.amplicon_bed, params.merge_bed)
+    off_target_stat(bwa_PE.out, params.merge_bed)
+    fastp_PE.out[0].map {sample, fq1, fq2, json ->  tuple(sample,fq1,fq2)}.set {clean_fq}
+    mutscan_call(clean_fq)
+    mutscan_call.out.map{sample, muts ->  tuple(sample,muts)}.set {mutscan_out}
+    filter_bam.out[0].combine(mutscan_out, by:0).map {sample, bam, bai, mutscan -> tuple(sample, bam, bai, mutscan)}| set {bma_mutscan}
+    varscan_call(bma_mutscan, params.merge_bed, params.ref)
+   // varscan_call.out[0].combine(mutscan_out, by:0).map {sample, varscan_mut, drug_mut, pos_mut, mp, mutscan_mut -> tuple(sample, varscan_mut, mutscan_mut)} |set {combine_mut_in}
+    // varscan_call.out[0].combine(mutscan_out, by:0).map {sample, varscan_mut, drug_mut, pos_mut, mp, mutscan_mut -> tuple(sample, varscan_mut, drug_mut, pos_mut, mp, mutscan_mut)}|set {combine_mut_in}
+    combine_mut(varscan_call.out)
+    combine_mut.out[0].map {sample, mut, drug -> tuple(sample, mut)}.set {combine_mut_out}
+    summary(QC_stat.out.map {sample, qc_stat -> qc_stat}.collect(),bam_stat.out[0].collect(), bam_stat.out[2].collect(), bam_stat.out[3].collect(), filter_bam.out[1].collect(), combine_mut.out[2].collect())
+    report_docx(combine_mut.out[0])
+}
+
+
+process fastp_PE {
+    publishDir "${params.outpath}/dimer", pattern: "*.dimer_count.xls"
+    publishDir "${params.outpath}/json", mode: 'copy', pattern: "*.json"
+    input:
+    tuple val(sample_name), path(fq1), path(fq2)
+    output:
+    tuple val(sample_name), path("${sample_name}.clean.R1.sub.fastq"), path("${sample_name}.clean.R2.sub.fastq"), path("${sample_name}.json")
+    path "${sample_name}.dimer_count.xls"
+    script:
+    """
+    ${params.software}/fastp --adapter_sequence TGGAATTCTCGGGTGCCAAGGAACTCCAGT --adapter_sequence_r2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAG -l 50 -i ${fq1} -I ${fq2} -o ${sample_name}.clean.R1.fastq -O ${sample_name}.clean.R2.fastq -j ${sample_name}.json -h ${sample_name}.html
+    ${params.software}/fastp --adapter_sequence TGGAATTCTCGGGTGCCAAGGAACTCCAGT --adapter_sequence_r2 AGATCGGAAGAGCGTCGTGTAGGGAAAGAG -l 0 -i ${fq1} -I ${fq2} -o ${sample_name}.clean.R1.dimer.fastq -O ${sample_name}.clean.R2.dimer.fastq
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/DimerStat.py -r ${sample_name}.clean.R1.dimer.fastq -p /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/work/02.PE/SKII12081/total_primers.fasta -o ./ -pf ${sample_name}
+    ${params.software}/seqtk sample ${sample_name}.clean.R1.fastq 500000 > ${sample_name}.clean.R1.sub.fastq
+    ${params.software}/seqtk sample ${sample_name}.clean.R2.fastq 500000 > ${sample_name}.clean.R2.sub.fastq
+    """
+}
+
+
+process bwa_PE {
+    publishDir "${params.outpath}/bam", pattern: "*.sort.bam*"
+    input:
+    tuple val(sample_name), path("${sample_name}.clean.R1.sub.fastq"), path("${sample_name}.clean.R2.sub.fastq")
+    path ref
+    output:
+    tuple val(sample_name), path("${sample_name}.sort.bam"), path("${sample_name}.sort.bam.bai")
+    script:
+    """
+    find /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/genome/hg19 -name "hg19.fa.*" | awk '{print "ln -s "\$0 " ."}'|sh
+    ${params.software}/bwa mem -R '@RG\\tID:1\\tLB:lib1\\tPL:cygnus\\tSM:${sample_name}\\tPU:unit1' -t 8 ${ref} ${sample_name}.clean.R1.sub.fastq ${sample_name}.clean.R2.sub.fastq | ${params.software}/samtools view -Sb - > ${sample_name}.bam
+    ${params.software}/samtools sort ${sample_name}.bam -o ${sample_name}.sort.bam
+    ${params.software}/samtools index ${sample_name}.sort.bam
+    """
+}
+
+process filter_bam {
+    publishDir "${params.outpath}/filter_bam", pattern: "*.trim_primer.sort.bam*"
+    publishDir "${params.outpath}/filter_base_depth", mode: 'copy', pattern: "*.trim_primer.base_depth.txt"
+    input:
+    tuple val(sample_name), path("${sample_name}.sort.bam"), path("${sample_name}.sort.bam.bai")
+    path ref
+    path amplicon_bed
+    path merge_bed
+    output:
+    tuple val(sample_name), path("${sample_name}.trim_primer.sort.bam"), path("${sample_name}.trim_primer.sort.bam.bai")
+    path "${sample_name}.trim_primer.base_depth.txt"
+    script:
+    """
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/trim_primer_pair.py ${sample_name}.sort.bam /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/work/02.PE/SKII12081/total_primers.fasta ${amplicon_bed} ${sample_name}.trim_primer.bam /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/test/PE/2.0/homo_pos.tsv
+    ${params.software}/samtools sort ${sample_name}.trim_primer.bam -o ${sample_name}.trim_primer.sort.bam
+    ${params.software}/samtools index ${sample_name}.trim_primer.sort.bam
+    ${params.software}/samtools depth -q 13 -d 100000 -aa -b ${merge_bed} ${sample_name}.trim_primer.sort.bam  > ${sample_name}.trim_primer.base_depth.txt
+    """
+}
+
+process bam_stat{
+    publishDir "${params.outpath}/bam_stat", mode: 'copy', pattern: "*.bam_stat.xls"
+    publishDir "${params.outpath}/depth", mode: 'copy', pattern: "*.reads_depth.txt"
+    publishDir "${params.outpath}/normal_depth", pattern: "*.normalized_raw_reads.xls"
+    publishDir "${params.outpath}/base_depth", mode: 'copy', pattern: "*.base_depth.txt"
+    input:
+    tuple val(sample_name), path("${sample_name}.sort.bam"), path("${sample_name}.sort.bam.bai"), path("${sample_name}.QC_stat.xls")
+    path amplicon_bed
+    path merge_bed
+    output:
+    path "${sample_name}.bam_stat.xls"
+    path "${sample_name}.reads_depth.txt"
+    path "${sample_name}.normalized_raw_reads.xls"
+    path "${sample_name}.base_depth.txt"
+    script:
+    """
+    ${params.software}/samtools depth -q 13 -d 100000 -aa -b ${merge_bed} ${sample_name}.sort.bam  > ${sample_name}.base_depth.txt
+    ${params.software}/python /mnt/gpfs/Users/caiyilun/test/chd_20/ap_dep_stat/ap_dep_stat_p.py -bed ${amplicon_bed} -bam ${sample_name}.sort.bam -outfile ${sample_name}.reads_depth.txt
+    ${params.software}/samtools flagstat ${sample_name}.sort.bam > ${sample_name}.flagstat
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/normalize_depth.py -i ${sample_name}.QC_stat.xls -d ${sample_name}.reads_depth.txt -s ${sample_name}
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/bam_stat.py -bam ${sample_name}.sort.bam -base_depth ${sample_name}.base_depth.txt -amplicon_depth ${sample_name}.reads_depth.txt -bed ${amplicon_bed} -flagstat ${sample_name}.flagstat -sample ${sample_name}
+    """
+}
+
+process varscan_call{
+    publishDir "${params.outpath}/varscan", pattern: "*varscan.hotspots.xls"
+    publishDir "${params.outpath}/varscan", mode: 'copy', pattern: "*.varscan.vcf"
+    input:
+    tuple val(sample_name), path("${sample_name}.trim_primer.sort.bam"), path("${sample_name}.trim_primer.sort.bam.bai"), path("${sample_name}.mutscan.txt")
+    path merge_bed
+    path ref
+    output:
+    tuple val(sample_name), path("${sample_name}_varscan.hotspots.xls"), path("${sample_name}.drug.xls"), path("${sample_name}.positive.xls"), path("${sample_name}.mpileup"), path("${sample_name}.mutscan.txt"), path("${sample_name}.varscan.vcf")
+    script:
+    """
+    find /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/genome/hg19 -name "hg19.fa.*" | awk '{print "ln -s "\$0 " ."}'|sh
+    /mnt/gpfs/Users/lilei/software/miniconda3/bin/samtools mpileup -A -a -d 100000 -l ${merge_bed} -f ${ref} ${sample_name}.trim_primer.sort.bam > ${sample_name}.mpileup
+    ${params.software}/varscan mpileup2cns ${sample_name}.mpileup --min-reads2 8 --min-freq-for-hom 0.8 --min-coverage 30 --output-vcf 1 --min-var-freq 0 --variants 0 --p-value 0.1 --strand-filter 0 > ${sample_name}.varscan.vcf
+    /usr/bin/singularity exec -B /mnt/gpfs/Users/lilei/tools/vep:/path -B `pwd`:`pwd` -B /mnt/gpfs/Users/fanlei/project/21.wgs_method_quality/01.database/MaxEntScan/fordownload:/fordownload /mnt/gpfs/Users/lilei/tools/vep/vep.sif vep -i ${sample_name}.varscan.vcf -fork 4 -o ${sample_name}.varscan.vep.vcf --format vcf --refseq --cache --offline --force_overwrite --dir_cache /path/cache/GRCh37 --plugin MaxEntScan,/fordownload --dir_plugins /path/plugin/VEP_plugins  --offline --fasta /path/FASTA/v37/Homo_sapiens.GRCh37.dna_sm.primary_assembly.fa.gz -assembly GRCh37 --shift_3prime 1 --no_escape --show_ref_allele --check_existing --exclude_predicted --canonical --vcf --numbers -hgvsg -hgvs > vep.tmp.log
+    /mnt/gpfs/Users/fanlei/miniconda3/bin/python /mnt/gpfs/Users/fanlei/project/21.wgs_method_quality/00.script/scripts/reform_vep.py ${sample_name}.varscan.vep.vcf /mnt/gpfs/Users/fanlei/project/21.wgs_method_quality/01.database/hugo_gene.list  > ${sample_name}.varscan.vep.tmp_avinput
+    ${params.software}/perl /mnt/gpfs/Users/lilei/tools/annovar/table_annovar.pl ${sample_name}.varscan.vep.tmp_avinput  /mnt/gpfs/Users/fanlei/project/21.wgs_method_quality/01.database/humandb/ -buildver hg19 -out ${sample_name}_varscan -remove -protocol refGene,clinvar_20221231,ALL.sites.2015_08,AFR.sites.2015_08,AMR.sites.2015_08,SAS.sites.2015_08,EUR.sites.2015_08,EAS.sites.2015_08,dbnsfp42a,dbscsnv11,esp6500siv2_all,exac03,gnomad211_genome,HGMD_PRO_2021.4,omim201806 -operation g,f,f,f,f,f,f,f,f,f,f,f,f,f,r -nastring . > annovar.tmp.log
+    /mnt/gpfs/Users/fanlei/miniconda3/bin/python /mnt/gpfs/Users/fanlei/project/21.wgs_method_quality/00.script/scripts/reform_anno.py ${sample_name}.varscan.vep.tmp_avinput ${sample_name}_varscan.hg19_multianno.txt > ${sample_name}_varscan.annotation.tsv
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/get_mut_docker.py -base /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/database/02.PE/af_cut_off/af_cut_off.v2.txt -mutscan ${sample_name}.mutscan.txt -anno ${sample_name}_varscan.annotation.tsv -positive_pos /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/database/01.SE/control/positive_control.pos -hot_pos ${sample_name}_varscan.hotspots.xls -drug_pos ${sample_name}.drug.xls -positive_mut ${sample_name}.positive.xls
+    """
+}
+
+process mutscan_call{
+    publishDir "${params.outpath}/varscan"
+    input:
+    tuple val(sample_name), path("${sample_name}.clean.R1.sub.fastq"), path("${sample_name}.clean.R2.sub.fastq")
+    output:
+    tuple val(sample_name), path("${sample_name}.mutscan.txt")
+    script:
+    """
+    /mnt/gpfs/Users/caiyilun/software/mutscan/mutscan -1 ${sample_name}.clean.R1.sub.fastq -2 ${sample_name}.clean.R2.sub.fastq -m /mnt/gpfs/Users/caiyilun/test/build_mutscan/CHD_V2/hot_genes2.h > ${sample_name}.mutscan.tmp.txt
+    ${params.software}/python /mnt/gpfs/Users/caiyilun/test/build_mutscan/mut_stat_v4.py -hot /mnt/gpfs/Users/caiyilun/test/build_mutscan/CHD_V2/hot_genes2.h -mo ${sample_name}.mutscan.tmp.txt -outfile ${sample_name}.mutscan.txt -FHan /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/database/02.PE/knowledge_base/final_FH_annotation.all.change.tsv
+    """
+}
+
+
+process combine_mut {
+    publishDir "${params.outpath}/mutation", pattern: "*mutation.xls"
+    publishDir "${params.outpath}/mutation", pattern: "*drug_mut.xls"
+    publishDir "${params.outpath}/sanger", pattern: "*sanger_validation.xls"
+    input:
+    tuple val(sample_name), path("${sample_name}_varscan.hotspots.xls"), path("${sample_name}.drug.xls"), path("${sample_name}.positive.xls"), path("${sample_name}.mpileup"), path("${sample_name}.mutscan.txt")
+    output:
+    tuple val(sample_name), path("${sample_name}.mutation.xls"), path("${sample_name}.drug_mut.xls")
+    path "${sample_name}.positive_mut.xls"
+    path "${sample_name}.sanger_validation.xls"
+    script:
+    """
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/combine_mut.v2.0.py -data /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/database/02.PE/af_cut_off/af_cut_off.v2.txt -depth ${sample_name}.mpileup -mutscan ${sample_name}.mutscan.txt -positive_mut ${sample_name}.positive.xls -hot_pos ${sample_name}_varscan.hotspots.xls -drug_pos ${sample_name}.drug.xls -sample ${sample_name}
+    """
+}
+
+
+process QC_stat{
+    publishDir "${params.outpath}/QC", mode: 'copy'
+    input:
+    tuple val(sample_name), path("${sample_name}.json")
+    output:
+    tuple val(sample_name), path("${sample_name}.QC_stat.xls")
+    script:
+    """
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/QC_stat.py ${sample_name}.json ${sample_name}
+    """
+}
+
+
+process off_target_stat{
+    publishDir "${params.outpath}/off_target"
+    input:
+    tuple val(sample_name), path("${sample_name}.sort.bam"), path("${sample_name}.sort.bam.bai")
+    path merge_bed
+    output:
+    path "${sample_name}.off_target.primer_cal.txt"
+    script:
+    """
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/bedtools bamtobed -i ${sample_name}.sort.bam > ${sample_name}.bed
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/bedtools sort -i ${sample_name}.bed > ${sample_name}.sorted.bed
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/bedtools merge -i ${sample_name}.sorted.bed > ${sample_name}.sorted.merge.bed
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/bedtools intersect -v -a ${sample_name}.sorted.merge.bed -b ${merge_bed} > ${sample_name}.off_target.bed
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/bedtools coverage -a ${sample_name}.off_target.bed -b ${sample_name}.sort.bam > ${sample_name}.off_target_depth.txt
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/bedtools intersect -a ${sample_name}.sort.bam -b ${sample_name}.off_target.bed > ${sample_name}.off_target.bam
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/samtools index ${sample_name}.off_target.bam
+    /mnt/gpfs/Users/huyangzhirong/02.sofware/miniconda3/bin/samtools fasta ${sample_name}.off_target.bam > ${sample_name}.off_target.fa
+    /mnt/gpfs/Users/wangning/software/ncbi-blast-2.9.0+/bin/blastn -query ${sample_name}.off_target.fa -db /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/work/02.PE/SKII12081/total_primers.fasta -out ${sample_name}.m6.out -evalue 1000 -word_size 15 -outfmt "6 qseqid sseqid pident length mismatch gapopen qlen qstart qend slen sstart send evalue bitscore stitle"
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/off_target_primer3.py ${sample_name}.m6.out ${sample_name}.off_target.primer_cal.txt
+    """
+}
+
+
+process summary{
+    input:
+    path(x)
+    path(y)
+    path(z)
+    path(m)
+    path(n)
+    path(f)
+    script:
+    """
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/hot_spot_stat.py -infile /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/database/02.PE/knowledge_base/db_v2.final.bed -indir ${params.outpath}/filter_base_depth --outdir ${params.outpath}/filter_base_depth -bed ${params.amplicon_bed}
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/sum_stat.v2.py -indir ${params.outpath} --outdir ${params.outpath}
+    """
+}
+
+
+process report_docx {
+    publishDir "${params.outpath}/report/FH/docx", pattern: "*.FH_report.docx"
+    publishDir "${params.outpath}/report/AD/docx", pattern: "*.AD_report.docx"
+    input:
+    tuple val(sample_name), path("${sample_name}.mutation.xls"), path("${sample_name}.drug_mut.xls")
+    output:
+    tuple val(sample_name), path("${sample_name}.FH_report.docx"), path("${sample_name}.AD_report.docx")
+    script:
+    """
+    ${params.software}/python /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/script/add_evidence.py /mnt/gpfs/Users/huyangzhirong/01.project/10.CHD/pipeline/database/02.PE/knowledge_base/kownledge_base.txt ${sample_name}.mutation.xls ${sample_name}.mut_report.xls
+    ${params.software}/python /mnt/gpfs/Users/caiyilun/test/azhm_report_test/make_sample_info_v2.py -input1 ${sample_name}.mut_report.xls -input2 ${sample_name}.drug_mut.xls -outfile ${sample_name}.sample_info_var.txt
+    ${params.software}/python /mnt/gpfs/Users/caiyilun/test/chd_report_test/V2/auto_report_chd_v4.py -inputfile ${sample_name}.sample_info_var.txt -outputfile ${sample_name}.FH_report.docx
+    ${params.software}/python /mnt/gpfs/Users/caiyilun/test/azhm_report_test/auto_report_AD_v2.py -inputfile ${sample_name}.sample_info_var.txt -outputfile ${sample_name}.AD_report.docx
+    """
+}

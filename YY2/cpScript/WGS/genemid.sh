@@ -1,0 +1,2 @@
+source /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/bin/activate /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/
+python3 /mnt/gpfs/Users/wangning/project/qican/WGS/pipeline/pipeline.py -i sample.info  -b /mnt/gpfs/Users/wangning/project/qican/WGS/pipeline -o /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/skID/WGS -n S100 -r

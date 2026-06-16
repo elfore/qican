@@ -1,0 +1,9 @@
+[Sample]
+CN002389-S01-D01-L01-UDI79	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002389-S01-D01-L01-UDI79_L000_R1.fq.gz	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002389-S01-D01-L01-UDI79_L000_R2.fq.gz	Oryza_sativa	no
+CN002390-S01-D01-L01-UDI80	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002390-S01-D01-L01-UDI80_L000_R1.fq.gz	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002390-S01-D01-L01-UDI80_L000_R2.fq.gz	Arabidopsis_thaliana	no
+CN002392-S01-D01-L01-UDI83	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002392-S01-D01-L01-UDI83_L000_R1.fq.gz	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002392-S01-D01-L01-UDI83_L000_R2.fq.gz	Bos_taurus	yes
+CN002393-S01-D01-L01-UDI82	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002393-S01-D01-L01-UDI82_L000_R1.fq.gz	/mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002393-S01-D01-L01-UDI82_L000_R2.fq.gz	Danio_rerio	yes
+[Para]
+Para_depth_required=10
+Para_rmdup=yes
+Para_config=/mnt/gpfs/Users/wangning/project/qican/WGS/pipeline/config/config.txt

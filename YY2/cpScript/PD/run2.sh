@@ -1,0 +1,2 @@
+source /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/bin/activate /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/
+nextflow -q -log log/log run /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/cpScript/PD/sigao_result2.nf -params-file param2.yaml -c /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/cpScript/PD/config -bg -with-trace -resume
