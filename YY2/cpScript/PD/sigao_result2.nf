@@ -18,6 +18,7 @@ workflow{
 process fastp_PE {
     publishDir "${params.outpath}/QC", mode: 'copy', pattern: "*.json"
     publishDir "${params.outpath}/bam", mode: 'copy', pattern: "*.base_depth.txt"
+    publishDir "${params.outpath}/bamfile", mode: 'copy', pattern: "*.sort.bam*"
     input:
     tuple val(sample_name), path(fq1), path(fq2)
     output:

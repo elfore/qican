@@ -148,7 +148,7 @@ process fastp_PE {
 
 
 process bwa_PE {
-    publishDir "${params.outpath}/bam", pattern: "*.sort.bam*"
+    publishDir "${params.outpath}/bam", mode: 'copy', pattern: "*.sort.bam*"
     input:
     tuple val(sample_name), path("${sample_name}.clean.R1.fastq"), path("${sample_name}.clean.R2.fastq")
     output:
