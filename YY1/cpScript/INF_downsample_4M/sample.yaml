@@ -1,45 +1,45 @@
-outpath: /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75/SKII15404/INF_downsample_4M
+outpath: /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75/skID/INF_downsample_4M
 
 sample:
   - sampleid: CN002477-S03-R01-L26-P04_IB
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//CN002477-S03-R01-L26-P04_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002477-S03-R01-L26-P04_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
   - sampleid: LC003694-S02-D01-L37-P08_IB
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//LC003694-S02-D01-L37-P08_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/LC003694-S02-D01-L37-P08_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
   - sampleid: LC003571-S03-D01-L19-P09_IB
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//LC003571-S03-D01-L19-P09_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/LC003571-S03-D01-L19-P09_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
   - sampleid: CN002477-S09-R01-L01-P06_IB
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//CN002477-S09-R01-L01-P06_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/CN002477-S09-R01-L01-P06_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
   - sampleid: 12_flu-L02-P65_IA
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//12_flu-L02-P65_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/12_flu-L02-P65_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
   - sampleid: 17_flu-L02-P66_IA
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//17_flu-L02-P66_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/17_flu-L02-P66_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
   - sampleid: 21_flu-L01-P68_IA
-    fqpath: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000//21_flu-L01-P68_L000_R1.fq.gz
-    runid: SKII15404
+    fqpath: /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/21_flu-L01-P68_L000_R1.fq.gz
+    runid: skID
     NA_type: "NA"
     seq_type: "SEQ"
     control_type: "sample"
