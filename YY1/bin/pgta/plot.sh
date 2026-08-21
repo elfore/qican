@@ -1,0 +1,1 @@
+for sampleID in $(cat sample); do /mnt/gpfs/Users/yangjinxurong/software/miniconda3/envs/stats/bin/Rscript /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1/bin/cnv/pgs_plot.R ${sampleID}/${sampleID}.cnplot.txt ${sampleID}/${sampleID}.nor.png ${sampleID};done

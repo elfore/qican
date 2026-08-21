@@ -1,0 +1,1 @@
+python qc_stat.py -infile ../YY1_info.txt -infile2 cnv.txt -outfile stat.txt

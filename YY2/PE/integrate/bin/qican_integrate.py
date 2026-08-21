@@ -635,7 +635,7 @@ def parse_hla_drug_map(hla_file):
                 continue
             gene = parts[3].replace("HLA-", "")
             if gene in maps:
-                maps[gene][parts[0]] = parts[1] + "|" + parts[5]
+                maps[gene].setdefault(parts[0], parts[1] + "|" + parts[5])
     return maps
 
 
@@ -707,7 +707,7 @@ def collect_hla_drug(project, batches, hla_file, target_run_id=None):
             test_id = batch["runID"] + "_" + sample2
             if test_id not in order[sample]:
                 order[sample].append(test_id)
-            tmp = {"A": [], "B": [], "C": []}
+            tmp = defaultdict(list)
             with open(file_path, "r", encoding="utf-8-sig") as handle:
                 for line in handle:
                     if line.startswith("Gene"):
@@ -717,9 +717,10 @@ def collect_hla_drug(project, batches, hla_file, target_run_id=None):
                         continue
                     gene = parts[0].split("_")[0][-1]
                     allele = ":".join(parts[1].split(":")[0:2])[1:]
-                    if gene in tmp and allele in drug_map.get(gene, {}):
-                        tmp[gene].append(drug_map[gene][allele])
-            for gene, values in tmp.items():
+                    if gene in ("A", "B", "C"):
+                        tmp[gene].append(allele)
+            for gene, alleles in tmp.items():
+                values = [drug_map[gene][allele] for allele in alleles if allele in drug_map.get(gene, {})]
                 value = "阴性" if not values else "----".join(sorted(set(values)))
                 data[sample]["HLA-" + gene][test_id] = value
     return matrix_majority(data, order, target_run_id)
@@ -821,11 +822,20 @@ def render_01_rows(project, source_tsv):
             row[4] if len(row) > 4 else "",
         ]
         if project in ("PB", "PD"):
-            base.extend([
-                row[5] if len(row) > 5 else "",
-                row[6] if len(row) > 6 else "",
-                row[7] if len(row) > 7 else "",
-            ])
+            if len(row) > 7:
+                base.extend([
+                    row[5] if len(row) > 5 else "",
+                    row[6] if len(row) > 6 else "",
+                    row[7] if len(row) > 7 else "",
+                ])
+            else:
+                # Legacy PB/PD sample_stat_allv.py writes only HLA typing and HLA-drug
+                # metrics after positive/negative rates. CYP is filled from 05 matrix.
+                base.extend([
+                    "",
+                    row[5] if len(row) > 5 else "",
+                    row[6] if len(row) > 6 else "",
+                ])
         rendered.append(base)
     return rendered
 
@@ -849,6 +859,10 @@ def row_matches_run(row, run_id):
     return bool(run_id) and bool(row) and row[0] == run_id
 
 
+def blank_summary_key(row, key_indexes):
+    return not any((row[i].strip() if i < len(row) else "") for i in key_indexes)
+
+
 def merge_summary_rows(existing_csv, out_csv, header, new_rows, key_indexes, target_run_id=None):
     merged = OrderedDict()
     if existing_csv.exists():
@@ -856,11 +870,15 @@ def merge_summary_rows(existing_csv, out_csv, header, new_rows, key_indexes, tar
         if old_header:
             header = old_header
         for row in old_rows:
+            if blank_summary_key(row, key_indexes):
+                continue
             key = tuple(row[i] if i < len(row) else "" for i in key_indexes)
             merged[key] = row
     kept_new = 0
     for row in new_rows:
         if target_run_id and not row_matches_run(row, target_run_id):
+            continue
+        if blank_summary_key(row, key_indexes):
             continue
         key = tuple(row[i] if i < len(row) else "" for i in key_indexes)
         merged[key] = row
@@ -877,12 +895,12 @@ def merge_tsv_rows_with_existing(existing_csv, out_csv, header, new_rows, key_in
             if old_rows[0]:
                 header = old_rows[0]
             for row in old_rows[1:]:
-                if not row:
+                if not row or blank_summary_key(row, key_indexes):
                     continue
                 key = tuple(row[i] if i < len(row) else "" for i in key_indexes)
                 merged[key] = row
     for row in new_rows:
-        if not row:
+        if not row or blank_summary_key(row, key_indexes):
             continue
         key = tuple(row[i] if i < len(row) else "" for i in key_indexes)
         merged[key] = row
@@ -913,10 +931,104 @@ def render_headerless(project, key, source_tsv, out_csv):
     return len(rows)
 
 
+def trivial_na_matrix_item(row, max_values=2):
+    if not row:
+        return False
+    if row[0].strip():
+        values = [value.strip() for value in row[2:] if value.strip()]
+    else:
+        values = [value.strip() for value in row if value.strip()]
+    return bool(values) and len(values) <= max_values and all(value == "NA" for value in values)
+
+
+def trivial_rate_matrix_item(row):
+    if not row or row[0].strip():
+        return False
+    rate = row[1].strip() if len(row) > 1 else ""
+    tail = [value.strip() for value in row[2:] if value.strip()]
+    return rate in ("100%", "100.00%") and all(value == "NA" for value in tail)
+
+
+def filter_matrix_rows(rows, drop_trivial_na_items=False, drop_trivial_rate_items=False):
+    if not drop_trivial_na_items and not drop_trivial_rate_items:
+        return rows
+    filtered = []
+    for row in rows:
+        if drop_trivial_na_items and trivial_na_matrix_item(row):
+            continue
+        if drop_trivial_rate_items and trivial_rate_matrix_item(row):
+            continue
+        filtered.append(row)
+    return filtered
+
+
 def write_matrix(project, key, rows, out_csv, master_tsv):
+    rows = filter_matrix_rows(
+        rows,
+        drop_trivial_na_items=(key == "06"),
+        drop_trivial_rate_items=(key in ("05", "07")),
+    )
     write_csv(out_csv, rows)
     write_tsv(master_tsv, rows)
     return sum(1 for row in rows if row)
+
+
+def format_fraction(value):
+    return str(value)
+
+
+def matrix_baseline_scores_for_run(matrix_csv, target_run_id):
+    rows = read_csv_rows(matrix_csv)
+    scores = {}
+    i = 0
+    while i < len(rows):
+        row = rows[i]
+        if len(row) >= 2 and row[1] == "一致率":
+            header = row
+            block = []
+            i += 1
+            while i < len(rows) and rows[i]:
+                if rows[i][0].strip():
+                    block.append(rows[i])
+                i += 1
+            for idx, test_id in enumerate(header):
+                if idx < 2 or not test_id.startswith(target_run_id + "_"):
+                    continue
+                matches = 0
+                total = 0
+                for item in block:
+                    baseline = item[2] if len(item) > 2 else "NA"
+                    value = item[idx] if idx < len(item) else "NA"
+                    if value == "":
+                        continue
+                    total += 1
+                    if value == baseline:
+                        matches += 1
+                sample_id = test_id[len(target_run_id) + 1:]
+                scores[sample_id] = format_fraction(matches / total) if total else ""
+        i += 1
+    return scores
+
+
+def update_01_cyp_from_matrix(project, run_id, matrix_csv, summary_csv):
+    if project not in ("PB", "PD") or not matrix_csv.exists() or not summary_csv.exists():
+        return 0
+    scores = matrix_baseline_scores_for_run(matrix_csv, run_id)
+    if not scores:
+        return 0
+    rows = read_csv_rows(summary_csv)
+    updated = 0
+    for row in rows[1:]:
+        if not row or row[0] != run_id:
+            continue
+        while len(row) < 9:
+            row.append("")
+        sample_id = row[3] if len(row) > 3 else ""
+        if sample_id in scores:
+            row[6] = scores[sample_id]
+            updated += 1
+    write_csv(summary_csv, rows)
+    return updated
 
 
 def split_matrix_blocks(rows):
@@ -930,16 +1042,21 @@ def split_matrix_blocks(rows):
             current_sample = row[0]
             blocks[current_sample] = {"header": row[:], "items": OrderedDict()}
             continue
-        if current_sample:
+        if current_sample and row[0]:
             blocks[current_sample]["items"][row[0]] = row[:]
     return blocks
 
 
-def matrix_rows_from_blocks(blocks):
+def matrix_rows_from_blocks(blocks, drop_trivial_na_items=False, drop_trivial_rate_items=False):
     rows = []
     for block in blocks.values():
         rows.append(block["header"])
-        rows.extend(block["items"].values())
+        for item in block["items"].values():
+            if drop_trivial_na_items and trivial_na_matrix_item(item):
+                continue
+            if drop_trivial_rate_items and trivial_rate_matrix_item(item):
+                continue
+            rows.append(item)
         rows.append([])
     return rows
 
@@ -959,6 +1076,38 @@ def recompute_matrix_rate(values, mode):
     return "%.2f%%" % (max(counts.values()) / len(clean) * 100)
 
 
+def align_hla_block_to_history(block, ids, target_ids):
+    if not ids or not target_ids:
+        return
+    id_index = {test_id: idx for idx, test_id in enumerate(ids)}
+    target_indexes = [id_index[test_id] for test_id in target_ids if test_id in id_index]
+    if not target_indexes:
+        return
+    item_keys = set(block["items"].keys())
+    for gene in sorted({key[:-1] for key in item_keys if len(key) > 1}):
+        v1, v2 = gene + "1", gene + "2"
+        if v1 not in block["items"] or v2 not in block["items"]:
+            continue
+        row1 = block["items"][v1]
+        row2 = block["items"][v2]
+        b1 = row1[2] if len(row1) > 2 else "NA"
+        b2 = row2[2] if len(row2) > 2 else "NA"
+        for idx in target_indexes:
+            pos = idx + 2
+            t1 = row1[pos] if pos < len(row1) else "NA"
+            t2 = row2[pos] if pos < len(row2) else "NA"
+            score_no_swap = int(t1 == b1 and b1 != "NA") + int(t2 == b2 and b2 != "NA")
+            score_swap = int(t2 == b1 and b1 != "NA") + int(t1 == b2 and b2 != "NA")
+            if score_swap > score_no_swap:
+                row1[pos], row2[pos] = t2, t1
+
+
+def refresh_matrix_rates(block, mode):
+    for item_key, row in block["items"].items():
+        values = row[2:]
+        row[1] = recompute_matrix_rate(values, mode)
+
+
 def matrix_contains_run(existing_csv, target_run_id):
     if not target_run_id or not existing_csv.exists():
         return False
@@ -969,7 +1118,7 @@ def matrix_contains_run(existing_csv, target_run_id):
     return False
 
 
-def merge_matrix_with_history(existing_csv, new_rows, out_csv, mode):
+def merge_matrix_with_history(existing_csv, new_rows, out_csv, mode, drop_trivial_na_items=False, drop_trivial_rate_items=False):
     history_rows = read_csv_rows(existing_csv) if existing_csv.exists() else []
     blocks = split_matrix_blocks(history_rows)
     new_blocks = split_matrix_blocks(new_rows)
@@ -1001,13 +1150,23 @@ def merge_matrix_with_history(existing_csv, new_rows, out_csv, mode):
                 new_item = new_block["items"][item_key]
                 for idx, test_id in enumerate(new_ids):
                     old_values[test_id] = new_item[idx + 2] if idx + 2 < len(new_item) else "NA"
+            else:
+                for test_id in new_ids:
+                    old_values[test_id] = "NA"
             values = [old_values.get(test_id, "NA") for test_id in ids]
             rate = recompute_matrix_rate(values, mode)
             block["items"][item_key] = [item_key, rate] + values
             updated += 1
-    rows = matrix_rows_from_blocks(blocks)
+        if mode == "baseline":
+            align_hla_block_to_history(block, ids, new_ids)
+            refresh_matrix_rates(block, mode)
+    rows = matrix_rows_from_blocks(
+        blocks,
+        drop_trivial_na_items=drop_trivial_na_items,
+        drop_trivial_rate_items=drop_trivial_rate_items,
+    )
     write_csv(out_csv, rows)
-    return updated
+    return sum(1 for row in rows if row)
 
 
 def should_write_preview(args):
@@ -1182,6 +1341,8 @@ def render_project_outputs(args, batches, run_work):
                             rows,
                             target,
                             matrix_modes[key],
+                            drop_trivial_na_items=(key == "06"),
+                            drop_trivial_rate_items=(key in ("05", "07")),
                         )
                     if args.write:
                         copy_if_exists(target, master_out / master_names[key])
@@ -1195,6 +1356,12 @@ def render_project_outputs(args, batches, run_work):
                     )
             else:
                 counts[(project, key)] = sum(1 for row in rows if row)
+        if should_write_preview(args):
+            matrix05 = project_out / SUMMARY_FILENAMES[(project, "05")] if args.write else run_work / "preview" / project / SUMMARY_FILENAMES[(project, "05")]
+            summary01 = project_out / SUMMARY_FILENAMES[(project, "01")] if args.write else run_work / "preview" / project / SUMMARY_FILENAMES[(project, "01")]
+            fixed = update_01_cyp_from_matrix(project, args.run_id, matrix05, summary01)
+            if fixed:
+                print("[render] %s 01 CYP <- %s (%s rows)" % (project, matrix05, fixed), flush=True)
 
     return counts
 

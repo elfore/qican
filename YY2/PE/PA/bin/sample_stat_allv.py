@@ -7,6 +7,23 @@ def get_ty(freq_text):
     return "阴性" if float(freq_text.split("%")[0]) <= 15 else "阳性"
 
 
+
+
+def sample_token_from_path(path):
+    stem = os.path.basename(path).split(".")[0]
+    for token in reversed(stem.split("_")):
+        if "-" in token or token.startswith(("LC", "CN")):
+            return token
+    return stem.split("_")[-1]
+
+
+def normalize_sample_token(token):
+    parts = token.split("-")
+    if parts and not parts[0].startswith(("LC", "CN")) and len(parts) > 1:
+        token = "-".join(parts[1:])
+    return token
+
+
 def collect_varscan_files(filedir):
     patterns = [
         f"{filedir}/PA/result/varscan/*.varscan.vcf",
@@ -48,7 +65,7 @@ def stat(infile, outfile, outdir, pos):
         ref_summary = {}
         ref_files = collect_varscan_files(ref_dir) if ref_dir else []
         for file1 in ref_files:
-            sample_name2 = os.path.basename(file1).split("_")[1].split(".")[0]
+            sample_name2 = normalize_sample_token(sample_token_from_path(file1))
             yang = 0
             ying = 0
             with open(file1, "r") as vcf_handle:
@@ -77,13 +94,13 @@ def stat(infile, outfile, outdir, pos):
                 print(f"WARNING: no varscan vcf found under {filedir}/PA")
                 continue
             for file1 in file_list:
-                sample_field = os.path.basename(file1).split("_")[1].split(".")[0]
+                sample_field = normalize_sample_token(sample_token_from_path(file1))
                 parts = sample_field.split("-")
                 if len(parts) < 2:
                     print(f"WARNING: unexpected sample name format in {file1}")
                     continue
-                sample_name = parts[1]
-                sample_name2 = "-".join(parts[1:])
+                sample_name = parts[0]
+                sample_name2 = sample_field
                 sample_id = pici + "_" + sample_name2
                 if sample_id in seen.setdefault(sample_name, set()) or os.path.getsize(file1) == 0:
                     continue

@@ -1,0 +1,1 @@
+/mnt/gpfs/Users/huanghuichang/00.software/miniconda/envs/Preprocess/bin/python /mnt/gpfs/Users/wanglei/projects/BK/tier_2_3_bioinfo_pipeline/v4.1/Launcher.py -i runlist.txt -s 

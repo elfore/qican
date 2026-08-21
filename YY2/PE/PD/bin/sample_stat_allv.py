@@ -12,6 +12,26 @@ def get_ty(ty):
 
 
 
+def sample_token_from_path(path, marker=None):
+    name = path.split("/")[-1]
+    if marker and marker in name:
+        stem = name.split(marker)[0]
+    else:
+        stem = name.split(".")[0]
+    for token in reversed(stem.split("_")):
+        if "-" in token or token.startswith(("LC", "CN")):
+            return token
+    return stem.split("_")[-1]
+
+
+def normalize_sample_token(token):
+    parts = token.split("-")
+    if parts and not parts[0].startswith(("LC", "CN")) and len(parts) > 1:
+        token = "-".join(parts[1:])
+    return token
+
+
+
 def stat(infile,infile2, outfile, outdir, pos):
     dicinfo = {}
     dic_r={}
@@ -56,7 +76,7 @@ def stat(infile,infile2, outfile, outdir, pos):
         file_list = os.popen(f"ls {rz_dir}/PD/result/mutation/*final_mut.txt").read().strip("\n").split("\n")
         file_list2 = os.popen(f"ls {rz_dir}/PD/result/hla_analysis_new2/*hla_result.tsv").read().strip("\n").split("\n")
         for file1 in file_list:
-            sample_name2=file1.split("/")[-1].split("_")[1].split(".")[0]
+            sample_name2=normalize_sample_token(sample_token_from_path(file1))
             r_yang=0
             r_ying=0
             with open(file1, "r") as FILE:
@@ -83,7 +103,7 @@ def stat(infile,infile2, outfile, outdir, pos):
             dic_r_num.setdefault(sample_name2, {}).setdefault("ying", r_ying)
             dic_r_num.setdefault(sample_name2, {}).setdefault("yang", r_yang)
         for file2 in file_list2:
-            sample_name2 =file2.split("/")[-1].split("_hla")[0].split("_")[1]
+            sample_name2 =normalize_sample_token(sample_token_from_path(file2, "_hla"))
             with open(file2, "r") as FILE:
                 tll_dic={"HLA-A":[],"HLA-B":[],"HLA-C":[]}
                 yyy=""
@@ -117,8 +137,8 @@ def stat(infile,infile2, outfile, outdir, pos):
             dic_f={}
             for file1 in file_list:
                 pici=dicinfo[filedir].split("|")[0]
-                sample_name = file1.split("/")[-1].split("_")[1].split(".")[0].split("-")[1]
-                sample_name2="-".join(file1.split("/")[-1].split("_")[1].split(".")[0].split("-")[1:])
+                sample_name = normalize_sample_token(sample_token_from_path(file1)).split("-")[0]
+                sample_name2=normalize_sample_token(sample_token_from_path(file1))
                 ying=0
                 yang=0
                 dic_t = {}
@@ -150,7 +170,7 @@ def stat(infile,infile2, outfile, outdir, pos):
                 text_list=[pici,m_id,sample_name2,yang_result,ying_result]
                 dic_f.setdefault(sample_name2, []).extend(text_list)
             for file2 in file_list2:
-                sample_name2 ="-".join(file2.split("/")[-1].split("_hla")[0].split("_")[1].split("-")[1:])
+                sample_name2 =normalize_sample_token(sample_token_from_path(file2, "_hla"))
                 c_num=0
                 dic_tt={}
                 yy_result=""

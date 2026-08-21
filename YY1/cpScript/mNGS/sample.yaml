@@ -1,0 +1,16 @@
+workdir: /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75/SKII15404/mNGS
+database: /mnt/gpfs/Users/luoshizhi/pipelines/metagenome/data/kraken2/metagenome202105
+genome: /mnt/gpfs/Users/wangning/project/mNGS_database/Finished_ref/total_reftaxid.fa
+
+kraken2_confidence: 0.05
+bracken_threshold: 8
+
+host_filtering:
+  order: Priceseq,Bowtie2,Dedup
+
+
+samples:
+  CN002341-S01-D01-L02-UDI1: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000/CN002341-S01-D01-L02-UDI1_L000_R1.fq.gz
+  CN002386-S01-D01-L01-UDI2: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000/CN002386-S01-D01-L01-UDI2_L000_R1.fq.gz
+  CN002387-S01-D01-L01-UDI3: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000/CN002387-S01-D01-L01-UDI3_L000_R1.fq.gz
+  CN002388-S01-D01-L01-UDI4: /mnt/me4_nfs/02.analysis/260702171042_B170_SKII15404-R2JC-ZY-YY-260702171043/Primary/FASTQ/L000/CN002388-S01-D01-L01-UDI4_L000_R1.fq.gz

@@ -11,3 +11,7 @@ SKII15307	260522163748_B141_SKII15307-T-YY2-260522163749	B141	V26	/mnt/gpfs/Data
 SKII5311	260523150002_B170_SKII5311-R2JC-YY2-260523150003	B170	V26	/mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/SKII5311	PA,PB,PD,WGS	done
 SKII15342	260603175803_B170_SKII15342-R2JC-YY2-260603175804	B170	V26	/mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/SKII15342	PA,PB,PD,WGS	done
 SKII15350	260605154758_B177_SKII15350-R2JC-YY2-260605154803	B177	V26	/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/SKII15350	PA,PB,PD,WGS	done
+SKII15399	260701150403_B169_SKII15399-R2JC-3-YY2-260701150404	B169	V26	/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/SKII15399	PA,PB,PD	done
+BGISEQ_0707	BGISEQ_0707	BGISEQ_0707	V26	/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/BGISEQ_0707	PB,PD	done
+GeneMind_0713	GeneMind_0713	GeneMind_0713	V26	/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/GeneMind_0713	PA,PB,PD	done
+SKII	260703153244_B174_SKII-R2JC-ZY-Y2_reanalysis_20260710154034	B174	V26	/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/SKII	PA,PB,PD	done

@@ -1,0 +1,5 @@
+process {
+executor = 'sge'
+queue = 'all.q'
+clusterOptions = '-l h=!node03 -pe smp 4 -cwd -V -S /bin/bash'
+}
