@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/PE/PB/bin/"
+SCRIPT_DIR="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/PE/PB/bin/"
 cd "$SCRIPT_DIR"
 
 python stat.py -infile ../../YY2_info.txt -outfile ../result.txt

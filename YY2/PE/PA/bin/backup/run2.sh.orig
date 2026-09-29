@@ -1,2 +1,0 @@
-source /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/bin/activate /mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/
-nextflow -q -log log/log run /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/SKII13133/PA/test.nf -params-file param2.yaml -c config -bg -with-trace -resume

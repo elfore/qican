@@ -48,7 +48,7 @@ def create_depth_matrix(project_name, input_file, output_dir):
     print(f"[{project_name}] Matrix shape: {matrix.shape[0]} rows x {matrix.shape[1]} columns")
 
 # 配置
-base_path = "/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/PE"
+base_path = "/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/PE"
 
 for proj in ['PA', 'PB', 'PD']:
     input_f = f"{base_path}/{proj}/SKII15275_{proj}_concise_depth.txt"

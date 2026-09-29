@@ -9,10 +9,6 @@ get_arg <- function(flag, default = NULL) {
   sub(paste0("^", flag, "="), "", hit[[1]])
 }
 
-infer_batch_label <- function(batch_name) {
-  sub("_.*$", "", batch_name)
-}
-
 parse_num <- function(x) {
   suppressWarnings(as.numeric(gsub("%", "", trimws(as.character(x)))))
 }
@@ -22,7 +18,6 @@ quant <- function(x, p) as.numeric(stats::quantile(x, p, na.rm = TRUE, names = F
 base_dir_default <- if (length(positional_args) >= 1) positional_args[[1]] else getwd()
 base_dir <- normalizePath(get_arg("--base_dir", base_dir_default), mustWork = FALSE)
 current_batch <- get_arg("--current_batch", basename(dirname(base_dir)))
-batch_label <- get_arg("--batch_label", infer_batch_label(current_batch))
 out_dir <- normalizePath(get_arg("--out_dir", file.path(base_dir, "boxplot_inputs")), mustWork = FALSE)
 feishu_long <- normalizePath(get_arg("--feishu_long", file.path(base_dir, "feishu_abundance_history_long.tsv")), mustWork = FALSE)
 

@@ -98,7 +98,7 @@ TOKENS = {
     }
 }
 
-YY1_DIR = "/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1"
+YY1_DIR = "/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1"
 LARK_CLI = "/mnt/gpfs1/Users/yangjinxurong/software/lark-cli/bin/lark-cli"
 
 def run_cmd(cmd, check=True):

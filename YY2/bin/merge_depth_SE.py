@@ -3,7 +3,7 @@ import pandas as pd
 import glob
 import argparse
 
-# usage:/mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/bin/python3 /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/bin/merge_depth_SE.py -skid SKII15275 
+# usage:/mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/bin/python3 /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/bin/merge_depth_SE.py -skid SKII15275 
 # 适用于SE数据，用SE流程执行的结果，结果目录中包含result/depth和result/depth_MAPQ, 
 # 最终report中使用的是depth_MAPQ的结果
 
@@ -126,7 +126,7 @@ def transpose_data(df):
 
 # 配置
 base_in = "/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150"
-base_out = "/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/SE"
+base_out = "/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/SE"
 
 def main():
     parse = argparse.ArgumentParser()

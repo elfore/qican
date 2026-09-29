@@ -19,7 +19,7 @@ from collections import Counter, OrderedDict, defaultdict
 from pathlib import Path
 
 
-BASE_DIR = Path("/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/PE")
+BASE_DIR = Path("/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/PE")
 INTEGRATE_DIR = BASE_DIR / "integrate"
 CONFIG_DIR = INTEGRATE_DIR / "config"
 MASTER_DIR = INTEGRATE_DIR / "master"

@@ -11,7 +11,7 @@ get_arg <- function(flag, default = NULL) {
 
 infer_batch_label <- function(base_dir) {
   batch_name <- basename(dirname(normalizePath(base_dir, mustWork = FALSE)))
-  sub("_.*$", "", batch_name)
+  batch_name
 }
 
 base_dir_default <- if (length(positional_args) >= 1) positional_args[[1]] else getwd()

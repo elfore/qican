@@ -8,6 +8,6 @@ perl /mnt/gpfs1/Users/wangning/project/qican/mNGS/classfiy.pl CN002386-S01-D01-L
 perl /mnt/gpfs1/Users/wangning/project/qican/mNGS/classfiy.pl CN002387-S01-D01-L01-UDI3 > CN002387-S01-D01-L01-UDI3.txt
 perl /mnt/gpfs1/Users/wangning/project/qican/mNGS/classfiy.pl CN002388-S01-D01-L01-UDI4 > CN002388-S01-D01-L01-UDI4.txt
 
-# /mnt/gpfs/Users/fanlei/software/STRetch_failed/tools/miniconda/envs/STR/bin/python3 /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1/bin/export_feishu_abundance_history.py
-# /mnt/gpfs/Users/wangning/software/Miniconda/envs/qiime2-2019.7/bin/Rscript /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1/bin/prepare_abundance_boxplot_inputs.R
-# /mnt/gpfs/Users/wangning/software/Miniconda/envs/qiime2-2019.7/bin//Rscript /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1/bin/plot_abundance_boxplot_generic.R
+# /mnt/gpfs/Users/fanlei/software/STRetch_failed/tools/miniconda/envs/STR/bin/python3 /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1/bin/export_feishu_abundance_history.py
+# /mnt/gpfs/Users/wangning/software/Miniconda/envs/qiime2-2019.7/bin/Rscript /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1/bin/prepare_abundance_boxplot_inputs.R
+# /mnt/gpfs/Users/wangning/software/Miniconda/envs/qiime2-2019.7/bin//Rscript /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1/bin/plot_abundance_boxplot_generic.R

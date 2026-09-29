@@ -83,4 +83,4 @@ $python /mnt/gpfs/Users/wangwenping/pythonProject/pipline/PGTA/new_pipeline/get_
 
 ##############pgs plot
 python /mnt/gpfs/Users/wangwenping/pythonProject/pipline/PGTA/new_pipeline/cn_filter.py -i $samid/${samid}.cn.txt -o $samid/${samid}.cnplot.txt -p $samid/${samid}.positive.txt -g $samid/${samid}.gender.txt
-/mnt/gpfs/Users/yangjinxurong/software/miniconda3/envs/stats/bin/Rscript /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1/bin/cnv/pgs_plot.R  $samid/${samid}.cnplot.txt $samid/${samid}.nor.png $samid
+/mnt/gpfs/Users/yangjinxurong/software/miniconda3/envs/stats/bin/Rscript /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1/bin/cnv/pgs_plot.R  $samid/${samid}.cnplot.txt $samid/${samid}.nor.png $samid

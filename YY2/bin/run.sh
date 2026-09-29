@@ -25,8 +25,8 @@ if [ -z "$SK_ID" ]; then
     exit 1
 fi
 
-sh /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/bin/generate_run.sh $BATCH_ID
-sh /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/bin/batch_execute.sh $SK_ID
+sh /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/bin/generate_run.sh $BATCH_ID
+sh /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/bin/batch_execute.sh $SK_ID
 
 # 已经创建 crontab -e
-# */10 * * * * sh /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/bin/robot.sh >> /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/monitor.log 2>&1
+# */10 * * * * sh /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/bin/robot.sh >> /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/monitor.log 2>&1

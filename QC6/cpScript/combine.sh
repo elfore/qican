@@ -6,4 +6,4 @@ cat /mnt/gpfs/Dataset/03.standard_seqdata/RawData/BGISEQ/PL260618-04/*CN002342*U
 
 bash run.sh
 
-/mnt/gpfs/Users/yangjinxurong/software/miniconda3/envs/stats/bin/python /mnt/gpfs1/Users/yangjinxurong/projects/qican/QC6/bin/stat3.py -indir /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/05.Qican6/dingzhi_final -infile /mnt/gpfs1/Users/yangjinxurong/projects/qican/QC6/bin/aa.txt
+/mnt/gpfs/Users/yangjinxurong/software/miniconda3/envs/stats/bin/python /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/QC6/bin/stat3.py -indir /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/05.Qican6/dingzhi_final -infile /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/QC6/bin/aa.txt

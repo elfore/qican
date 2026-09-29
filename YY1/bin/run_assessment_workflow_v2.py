@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 
-YY1 = Path("/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1")
+YY1 = Path("/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1")
 
 
 def run(argv: list[str], *, cwd: Path | None = None) -> None:

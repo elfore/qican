@@ -16,7 +16,7 @@ fi
 
 # 2. 定义工作根目录和目标目录
 # 基础路径保持不变
-# BASE_PATH="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2"
+# BASE_PATH="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2"
 BASE_PATH="/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/"
 TARGET_DIR="$1"
 WORK_DIR="$BASE_PATH/$TARGET_DIR"

@@ -4,7 +4,7 @@ import pandas as pd
 import glob
 import argparse
 
-# usage:/mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/bin/python3 /mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/bin/merge_depth_PE.py -skid SKII15275
+# usage:/mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/nextflow/bin/python3 /mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/bin/merge_depth_PE.py -skid SKII15275
 
 EXPECTED_COLS = ['SampleID', 'Chrom', 'Start', 'End', 'Target', 'Depth']
 
@@ -171,7 +171,7 @@ def transpose_data(df):
 
 # 配置
 base_in = "/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150"
-base_out = "/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/PE"
+base_out = "/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/PE"
 
 
 def main():

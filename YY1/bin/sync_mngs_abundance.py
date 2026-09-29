@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 
-YY1_DIR = Path("/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1")
+YY1_DIR = Path("/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1")
 LARK = "/mnt/gpfs1/Users/yangjinxurong/software/lark-cli/bin/lark-cli"
 TOKEN = "MjihsiLrnh6UU5tc4cSc4PRSntc"
 EXPECTED_LIBRARIES = {

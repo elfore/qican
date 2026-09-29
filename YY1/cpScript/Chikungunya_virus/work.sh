@@ -1,1 +1,3 @@
 /mnt/gpfs/Users/fanlei/software/STRetch_failed/tools/miniconda/envs/STR/bin/python3 /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75/SKII15176_others/generate_analysis_scripts.py /mnt/me4_nfs/02.analysis/batchID/Primary/FASTQ/L000/ /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75/SKII15176_others/Chikungunya_virus/list /mnt/gpfs/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75/skID/Chikungunya_virus Chikungunya
+cd scripts
+for i in `ls`; do qsub -V -cwd -pe smp 4 -l vf=5G -l h='!node03' -q all.q $i;done

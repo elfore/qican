@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/PE/PA/bin"
+SCRIPT_DIR="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/PE/PA/bin"
 KB_FILE="/mnt/gpfs1/Users/caiyilun/test/qican_stat/chd/kownledge_base.txt"
 
 cd "$SCRIPT_DIR"

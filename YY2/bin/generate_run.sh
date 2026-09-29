@@ -9,11 +9,11 @@
 # ==============================================================================
 
 # 0. 硬编码源模版路径
-SOURCE_PE_DIR="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/cpScript"
-SOURCE_SE_1_DIR="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/cpScriptSE/SE_1/"
-SOURCE_SE_2_DIR="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2/cpScriptSE/SE_2/"
+SOURCE_PE_DIR="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/cpScript"
+SOURCE_SE_1_DIR="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/cpScriptSE/SE_1/"
+SOURCE_SE_2_DIR="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2/cpScriptSE/SE_2/"
 OUTPUT_DIR="/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/PE150/"
-# OUTPUT_DIR="/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY2"
+# OUTPUT_DIR="/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY2"
 
 # 1. 参数校验
 if [ -z "$1" ]; then
@@ -53,21 +53,21 @@ else
     echo "已创建运行目录: $OUTPUT_DIR_PE"
 fi
 
-if [ -d "$OUTPUT_DIR_SE_1" ]; then
-    echo "警告: 目录 $OUTPUT_DIR_SE_1 已存在，程序退出。"
-    exit 1
-else
-    mkdir -p "$OUTPUT_DIR_SE_1"
-    echo "已创建运行目录: $OUTPUT_DIR_SE_1"
-fi
+# if [ -d "$OUTPUT_DIR_SE_1" ]; then
+#     echo "警告: 目录 $OUTPUT_DIR_SE_1 已存在，程序退出。"
+#     exit 1
+# else
+#     mkdir -p "$OUTPUT_DIR_SE_1"
+#     echo "已创建运行目录: $OUTPUT_DIR_SE_1"
+# fi
 
-if [ -d "$OUTPUT_DIR_SE_2" ]; then
-    echo "警告: 目录 $OUTPUT_DIR_SE_2 已存在，程序退出。"
-    exit 1
-else
-    mkdir -p "$OUTPUT_DIR_SE_2"
-    echo "已创建运行目录: $OUTPUT_DIR_SE_2"
-fi
+# if [ -d "$OUTPUT_DIR_SE_2" ]; then
+#     echo "警告: 目录 $OUTPUT_DIR_SE_2 已存在，程序退出。"
+#     exit 1
+# else
+#     mkdir -p "$OUTPUT_DIR_SE_2"
+#     echo "已创建运行目录: $OUTPUT_DIR_SE_2"
+# fi
 
 # 4. 整理文件结构 (从 SOURCE_PE_DIR 复制模版)
 TEMPLATES=("newNational" "PA" "PB" "PD" "tumor_panel" "WGS")
@@ -82,25 +82,25 @@ for item in "${TEMPLATES[@]}"; do
     fi
 done
 
-echo "正在从源路径同步SE_1模版..."
-for item in "${TEMPLATES[@]}"; do
-    if [ -d "$SOURCE_SE_1_DIR/$item" ]; then
-        cp -r "$SOURCE_SE_1_DIR/$item" "$OUTPUT_DIR_SE_1/"
-        echo "  [已同步] $item"
-    else
-        echo "  [错误] 模版目录不存在: $SOURCE_SE_1_DIR/$item"
-    fi
-done
+# echo "正在从源路径同步SE_1模版..."
+# for item in "${TEMPLATES[@]}"; do
+#     if [ -d "$SOURCE_SE_1_DIR/$item" ]; then
+#         cp -r "$SOURCE_SE_1_DIR/$item" "$OUTPUT_DIR_SE_1/"
+#         echo "  [已同步] $item"
+#     else
+#         echo "  [错误] 模版目录不存在: $SOURCE_SE_1_DIR/$item"
+#     fi
+# done
 
-echo "正在从源路径同步SE_2模版..."
-for item in "${TEMPLATES[@]}"; do
-    if [ -d "$SOURCE_SE_2_DIR/$item" ]; then
-        cp -r "$SOURCE_SE_2_DIR/$item" "$OUTPUT_DIR_SE_2/"
-        echo "  [已同步] $item"
-    else
-        echo "  [错误] 模版目录不存在: $SOURCE_SE_2_DIR/$item"
-    fi
-done
+# echo "正在从源路径同步SE_2模版..."
+# for item in "${TEMPLATES[@]}"; do
+#     if [ -d "$SOURCE_SE_2_DIR/$item" ]; then
+#         cp -r "$SOURCE_SE_2_DIR/$item" "$OUTPUT_DIR_SE_2/"
+#         echo "  [已同步] $item"
+#     else
+#         echo "  [错误] 模版目录不存在: $SOURCE_SE_2_DIR/$item"
+#     fi
+# done
 
 
 # 5. 执行内容替换
@@ -115,25 +115,25 @@ find "$OUTPUT_DIR_PE" -type f ! -name "*.nf" | while read -r file; do
     fi
 done
 
-# 递归查找新SE_1目录下所有文件进行替换 (排除 .nf 文件)
-find "$OUTPUT_DIR_SE_1" -type f ! -name "*.nf" | while read -r file; do
-    # 仅处理文本文件
-    if file "$file" | grep -q "text"; then
-        sed -i "s/batchID/$BATCH_ID/g" "$file"
-        sed -i "s/skID/$SK_ID/g" "$file"
+# # 递归查找新SE_1目录下所有文件进行替换 (排除 .nf 文件)
+# find "$OUTPUT_DIR_SE_1" -type f ! -name "*.nf" | while read -r file; do
+#     # 仅处理文本文件
+#     if file "$file" | grep -q "text"; then
+#         sed -i "s/batchID/$BATCH_ID/g" "$file"
+#         sed -i "s/skID/$SK_ID/g" "$file"
 
-    fi
-done
+#     fi
+# done
 
-# 递归查找新SE_2目录下所有文件进行替换 (排除 .nf 文件)
-find "$OUTPUT_DIR_SE_2" -type f ! -name "*.nf" | while read -r file; do
-    # 仅处理文本文件
-    if file "$file" | grep -q "text"; then
-        sed -i "s/batchID/$BATCH_ID/g" "$file"
-        sed -i "s/skID/$SK_ID/g" "$file"
+# # 递归查找新SE_2目录下所有文件进行替换 (排除 .nf 文件)
+# find "$OUTPUT_DIR_SE_2" -type f ! -name "*.nf" | while read -r file; do
+#     # 仅处理文本文件
+#     if file "$file" | grep -q "text"; then
+#         sed -i "s/batchID/$BATCH_ID/g" "$file"
+#         sed -i "s/skID/$SK_ID/g" "$file"
 
-    fi
-done
+#     fi
+# done
 
 echo "参数替换完成（已跳过所有 .nf 文件）。"
 
@@ -156,7 +156,7 @@ else
         [ -z "$path" ] && continue
         TOTAL_FQ=$((TOTAL_FQ + 1))
         if [ ! -f "$path" ]; then
-            # echo "[缺失] $path"
+            echo "[缺失] $path"
             MISSING_COUNT=$((MISSING_COUNT + 1))
         fi
     done <<< "$FQ_PATHS"
@@ -170,57 +170,57 @@ else
     fi
 fi
 
-# 从替换后的SE_1配置文件中提取所有以 .fq.gz 结尾的绝对路径
-FQ_PATHS=$(grep -roh "/[^[:space:],;]*\.fq\.gz" "$OUTPUT_DIR_SE_1" | sort -u)
+# # 从替换后的SE_1配置文件中提取所有以 .fq.gz 结尾的绝对路径
+# FQ_PATHS=$(grep -roh "/[^[:space:],;]*\.fq\.gz" "$OUTPUT_DIR_SE_1" | sort -u)
 
-if [ -z "$FQ_PATHS" ]; then
-    echo "提示: 未在配置文件中检测到任何 .fq.gz 路径。"
-    exit 1
-    rm -rf $OUTPUT_DIR_SE_1
-else
-    while read -r path; do
-        [ -z "$path" ] && continue
-        TOTAL_FQ=$((TOTAL_FQ + 1))
-        if [ ! -f "$path" ]; then
-            # echo "[缺失] $path"
-            MISSING_COUNT=$((MISSING_COUNT + 1))
-        fi
-    done <<< "$FQ_PATHS"
+# if [ -z "$FQ_PATHS" ]; then
+#     echo "提示: 未在配置文件中检测到任何 .fq.gz 路径。"
+#     exit 1
+#     rm -rf $OUTPUT_DIR_SE_1
+# else
+#     while read -r path; do
+#         [ -z "$path" ] && continue
+#         TOTAL_FQ=$((TOTAL_FQ + 1))
+#         if [ ! -f "$path" ]; then
+#             # echo "[缺失] $path"
+#             MISSING_COUNT=$((MISSING_COUNT + 1))
+#         fi
+#     done <<< "$FQ_PATHS"
 
-    if [ "$MISSING_COUNT" -eq 0 ]; then
-        echo "检查通过: 成功验证 $TOTAL_FQ 个 fq.gz 文件，全部存在。"
-    else
-        echo "检查结果: 发现 $MISSING_COUNT 个文件缺失 (总计 $TOTAL_FQ 个路径)。"
-        echo "请检查原始数据路径是否正确。"
-        rm -rf $OUTPUT_DIR_SE_1
-    fi
-fi
+#     if [ "$MISSING_COUNT" -eq 0 ]; then
+#         echo "检查通过: 成功验证 $TOTAL_FQ 个 fq.gz 文件，全部存在。"
+#     else
+#         echo "检查结果: 发现 $MISSING_COUNT 个文件缺失 (总计 $TOTAL_FQ 个路径)。"
+#         echo "请检查原始数据路径是否正确。"
+#         rm -rf $OUTPUT_DIR_SE_1
+#     fi
+# fi
 
-# 从替换后的SE_2配置文件中提取所有以 .fq.gz 结尾的绝对路径
-FQ_PATHS=$(grep -roh "/[^[:space:],;]*\.fq\.gz" "$OUTPUT_DIR_SE_2" | sort -u)
+# # 从替换后的SE_2配置文件中提取所有以 .fq.gz 结尾的绝对路径
+# FQ_PATHS=$(grep -roh "/[^[:space:],;]*\.fq\.gz" "$OUTPUT_DIR_SE_2" | sort -u)
 
-if [ -z "$FQ_PATHS" ]; then
-    echo "提示: 未在配置文件中检测到任何 .fq.gz 路径。"
-    exit 1
-    rm -rf $OUTPUT_DIR_SE_2
-else
-    while read -r path; do
-        [ -z "$path" ] && continue
-        TOTAL_FQ=$((TOTAL_FQ + 1))
-        if [ ! -f "$path" ]; then
-            # echo "[缺失] $path"
-            MISSING_COUNT=$((MISSING_COUNT + 1))
-        fi
-    done <<< "$FQ_PATHS"
+# if [ -z "$FQ_PATHS" ]; then
+#     echo "提示: 未在配置文件中检测到任何 .fq.gz 路径。"
+#     exit 1
+#     rm -rf $OUTPUT_DIR_SE_2
+# else
+#     while read -r path; do
+#         [ -z "$path" ] && continue
+#         TOTAL_FQ=$((TOTAL_FQ + 1))
+#         if [ ! -f "$path" ]; then
+#             echo "[缺失] $path"
+#             MISSING_COUNT=$((MISSING_COUNT + 1))
+#         fi
+#     done <<< "$FQ_PATHS"
 
-    if [ "$MISSING_COUNT" -eq 0 ]; then
-        echo "检查通过: 成功验证 $TOTAL_FQ 个 fq.gz 文件，全部存在。"
-    else
-        echo "检查结果: 发现 $MISSING_COUNT 个文件缺失 (总计 $TOTAL_FQ 个路径)。"
-        echo "请检查原始数据路径是否正确。"
-        rm -rf $OUTPUT_DIR_SE_2
-    fi
-fi
+#     if [ "$MISSING_COUNT" -eq 0 ]; then
+#         echo "检查通过: 成功验证 $TOTAL_FQ 个 fq.gz 文件，全部存在。"
+#     else
+#         echo "检查结果: 发现 $MISSING_COUNT 个文件缺失 (总计 $TOTAL_FQ 个路径)。"
+#         echo "请检查原始数据路径是否正确。"
+#         rm -rf $OUTPUT_DIR_SE_2
+#     fi
+# fi
 
 
 echo "---------------------------------------"

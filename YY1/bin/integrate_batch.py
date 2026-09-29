@@ -85,7 +85,7 @@ TOKENS = {
 }
 
 # 工具与环境路径
-YY1_DIR = "/mnt/gpfs1/Users/yangjinxurong/projects/qican/YY1"
+YY1_DIR = "/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1"
 LARK_CLI = "/mnt/gpfs1/Users/yangjinxurong/software/lark-cli/bin/lark-cli"
 mNGS_SCRIPT = "/mnt/gpfs1/Users/wangning/project/qican/mNGS/QC_stat.pl"
 mNGS_CLASS = "/mnt/gpfs1/Users/wangning/project/qican/mNGS/classfiy.pl"

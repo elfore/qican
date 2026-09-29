@@ -5,7 +5,7 @@ import numpy as np
 
 
 def get_ty(ty):
-    if ty=="0|0":
+    if ty.replace("/", "|")=="0|0":
         return "阴性"
     else:
         return "阳性"
