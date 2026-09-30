@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Create a YY1 batch workspace from the cpScript template."""
+"""
+Create a YY1 batch workspace from the cpScript template.
+/mnt/gpfs1/Users/yangjinxurong/software/miniconda3/envs/singlecell/bin/python3 prepare_yy1_batch.py --batchid 260920142132_B174_SKII-JBJC-YY1-260920142133
+"""
 
 from __future__ import annotations
 
@@ -10,6 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
+OUTPUT_ROOT = Path("/mnt/gpfs1/Dataset/04.project/Bioinfo/99.Sequencer_assessment/01.BK/02.Analysis/04.new_qican/S100/SE75")
 
 YY1_ROOT = Path("/mnt/gpfs1/Users/yangjinxurong/pipeline/qican/YY1")
 TEMPLATE_ROOT = YY1_ROOT / "cpScript"
@@ -32,8 +36,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=YY1_ROOT,
-        help=f"YY1 result root (default: {YY1_ROOT}).",
+        default=OUTPUT_ROOT,
+        help=f"YY1 result root (default: {OUTPUT_ROOT}).",
     )
     parser.add_argument(
         "--force",
@@ -149,14 +153,23 @@ def copy_template(destination: Path) -> None:
     """Copy the cpScript tree contents into destination."""
     destination.mkdir(parents=True, exist_ok=True)
     # copytree on the root copies its contents into an existing destination,
-    # including hidden entries, while preserving file metadata.
-    shutil.copytree(TEMPLATE_ROOT, destination, dirs_exist_ok=True)
+    # including hidden entries
+    # 临时禁用 copystat，阻止 copytree 覆写目录的历史时间戳
+    orig_copystat = shutil.copystat
+    try:
+        shutil.copystat = lambda src, dst, **kw: None
+        shutil.copytree(
+            TEMPLATE_ROOT,
+            destination,
+            dirs_exist_ok=True,
+            copy_function=shutil.copy,  # 用 copy 替代 copy2，不拷贝文件的历史时间
+        )
+    finally:
+        shutil.copystat = orig_copystat
 
 
-def replace_in_files(result_root: Path, batchid: str, skid: str, dry_run: bool) -> int:
+def replace_in_files(result_root: Path, batchid: str, skid: str) -> int:
     changed = 0
-    if dry_run:
-        return changed
     for path in result_root.rglob("*"):
         if not path.is_file():
             continue
@@ -201,7 +214,7 @@ def main() -> int:
 
     result_root.mkdir(parents=True, exist_ok=True)
     copy_template(result_root)
-    changed = replace_in_files(result_root, batchid, skid, dry_run=False)
+    changed = replace_in_files(result_root, batchid, skid)
     missing, unresolved = check_fastq_paths(result_root)
 
     print(f"[INFO] replaced files={changed}")
